@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "ts-node-dev src/index.ts",
     "build": "tsc & next build",
     "start": "node dist/index.js",
     "lint": "eslint"
