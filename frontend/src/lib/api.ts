@@ -1,14 +1,21 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5001/api";
 
-// Balance function
-export const getBalance = async (token: string) => {
-  const res = await fetch(`${API_URL}/tokens/balance`, {
+const fetchWithAuth = async (url: string, token?: string, options: RequestInit = {}) => {
+  const res = await fetch(url, {
+    ...options,
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...(options.headers || {}),
     },
   });
 
   return handleResponse(res);
+};
+
+// Balance function
+export const getBalance = async (token: string) => {
+  return fetchWithAuth(`${API_URL}/tokens/balance`, token);
 };
 
 // Prediction function

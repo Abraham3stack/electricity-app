@@ -108,12 +108,6 @@ npm run dev
 
 ---
 
-## 📸 Screenshots
-
-(Add screenshots here later)
-
----
-
 ## 👤 Author
 
 Abraham Ogbu

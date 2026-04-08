@@ -34,9 +34,11 @@ export default function Dashboard() {
 
   const [balance, setBalance] = useState(0);
   const [initialUnits, setInitialUnits] = useState("");
+  const [initLoading, setInitLoading] = useState(false);
+
   // Handler for initializing units
   const handleInitializeUnits = async () => {
-    if (!token) return;
+    if (!token || initLoading) return;
 
     const units = Number(initialUnits);
 
@@ -46,26 +48,28 @@ export default function Dashboard() {
     }
 
     try {
+      setInitLoading(true);
+
       await initializeUnits(token, units);
 
-      setToast({ message: "Units initialized successfully", type: "success" });
+      const [balanceData, predictionData, alertData, historyData] = await Promise.all([
+        getBalance(token),
+        getPrediction(token),
+        getAlert(token),
+        getUsageHistory(token),
+      ]);
 
-      // Refresh EVERYTHING
-      const balanceData = await getBalance(token);
       setBalance(balanceData.data.remaining);
-
-      const predictionData = await getPrediction(token);
       setPrediction(predictionData.data);
-
-      const alertData = await getAlert(token);
       setAlert(alertData.data.alert);
-
-      const historyData = await getUsageHistory(token);
       setHistory(historyData.data);
 
+      setToast({ message: "Units initialized successfully", type: "success" });
       setInitialUnits("");
     } catch (error: any) {
       setToast({ message: error?.message || "Failed to initialize units", type: "error" });
+    } finally {
+      setInitLoading(false);
     }
   };
 
@@ -83,16 +87,16 @@ export default function Dashboard() {
       if (!token) return;
 
       try {
-        const balanceData = await getBalance(token);
+        const [balanceData, predictionData, alertData, historyData] = await Promise.all([
+          getBalance(token),
+          getPrediction(token),
+          getAlert(token),
+          getUsageHistory(token),
+        ]);
+
         setBalance(balanceData.data.remaining);
-
-        const predictionData = await getPrediction(token);
         setPrediction(predictionData.data);
-
-        const alertData = await getAlert(token);
         setAlert(alertData.data.alert);
-
-        const historyData = await getUsageHistory(token);
         setHistory(historyData.data);
       } catch (error) {
         console.error(error);
@@ -116,20 +120,27 @@ export default function Dashboard() {
     if (!token) return;
     try {
       await logUsage(token, units);
-      setToast({ message: "Usage logged successfully", type: "success" });
 
-      // Refresh data after logging
-      const balanceData = await getBalance(token);
+      const [balanceData, predictionData, alertData, historyData] = await Promise.all([
+        getBalance(token),
+        getPrediction(token),
+        getAlert(token),
+        getUsageHistory(token),
+      ]);
+
       setBalance(balanceData.data.remaining);
 
-      const predictionData = await getPrediction(token);
-      setPrediction(predictionData.data);
+      // Fix: ensure avg shows on first entry
+      const pred = predictionData.data;
+      if (pred.avgPerDay === 0 && units > 0) {
+        pred.avgPerDay = units;
+      }
 
-      const alertData = await getAlert(token);
+      setPrediction(pred);
       setAlert(alertData.data.alert);
-
-      const historyData = await getUsageHistory(token);
       setHistory(historyData.data);
+
+      setToast({ message: "Usage logged successfully", type: "success" });
     } catch (error: any) {
       setToast({
         message: error?.message || "Something went wrong",
@@ -184,10 +195,10 @@ export default function Dashboard() {
 
         <button
           onClick={handleInitializeUnits}
-          disabled={!initialUnits}
-          className="w-full bg-primary text-black font-bold py-2 rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!initialUnits || initLoading}
+          className={`w-full font-bold py-2 rounded transition ${initLoading ? "bg-gray-500 cursor-not-allowed" : "bg-primary text-black hover:opacity-90"}`}
         >
-          {balance === 0 ? "Set Units" : "Add Units"}
+          {initLoading ? "Processing..." : balance === 0 ? "Set Units" : "Add Units"}
         </button>
       </div>
 

@@ -1,11 +1,40 @@
+import { useEffect, useState } from "react";
+
 type Props = {
   avgPerDay?: number;
   daysLeft?: number;
 };
 
 export default function PredictionCard({ avgPerDay, daysLeft }: Props) {
-  const safeAvg = avgPerDay ?? 0;
-  const safeDays = daysLeft ?? 0;
+  const safeAvg = Number.isFinite(avgPerDay as number) ? (avgPerDay as number) : 0;
+  const safeDays = Number.isFinite(daysLeft as number) ? (daysLeft as number) : 0;
+
+  // Animated display values
+  const [displayAvg, setDisplayAvg] = useState(0);
+  const [displayDays, setDisplayDays] = useState(0);
+
+  useEffect(() => {
+    // simple ease animation for numbers
+    let raf: number;
+    const duration = 300; // ms
+    const start = performance.now();
+
+    const startAvg = displayAvg;
+    const startDays = displayDays;
+
+    const animate = (t: number) => {
+      const progress = Math.min((t - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+
+      setDisplayAvg(startAvg + (safeAvg - startAvg) * ease);
+      setDisplayDays(startDays + (safeDays - startDays) * ease);
+
+      if (progress < 1) raf = requestAnimationFrame(animate);
+    };
+
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [safeAvg, safeDays]);
 
   // 🔥 Smart insight logic
   let insight = "";
@@ -25,6 +54,10 @@ export default function PredictionCard({ avgPerDay, daysLeft }: Props) {
     insight = "✅ You are conserving electricity well";
   }
 
+  if (safeAvg === 0 && safeDays === 0) {
+    insight = "Set your units and log usage to see predictions";
+  }
+
   // 🔥 Smart recommendation logic
   let recommendation = "";
 
@@ -38,21 +71,21 @@ export default function PredictionCard({ avgPerDay, daysLeft }: Props) {
   }
 
   return (
-    <div className="bg-card p-6 rounded-2xl shadow-lg border border-gray-700 hover:scale-105 transition">
+    <div className="bg-card p-6 rounded-2xl shadow-lg border border-gray-700 hover:scale-[1.02] transition-transform duration-200">
       <h2 className="text-gray-400 text-sm">Usage Prediction</h2>
 
       <div className="mt-4 space-y-2">
         <p>
           ⚡️ Avg/day:{" "}
           <span className="text-primary font-bold">
-            {safeAvg.toFixed(2)} kWh
+            {displayAvg > 0 ? displayAvg.toFixed(2) : "0.00"} kWh
           </span>
         </p>
 
         <p>
           ⏳ Days left:{" "}
           <span className="text-accent font-bold">
-            {safeDays < 1 ? "Less than a day" : `${safeDays} days`}
+            {displayDays < 1 ? "Less than a day" : `${Math.round(displayDays)} days`}
           </span>
         </p>
       </div>
