@@ -1,0 +1,213 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import BalanceCard from "@/components/BalanceCard";
+import { getBalance, initializeUnits } from "@/lib/api";
+import PredictionCard from "@/components/PredictionCard";
+import { getPrediction } from "@/lib/api";
+import AlertBanner from "@/components/AlertBanner";
+import{ getAlert } from "@/lib/api";
+import UsageInput from "@/components/UsageInput";
+import { logUsage } from "@/lib/api";
+import UsageChart from "@/components/UsageChart";
+import { getUsageHistory } from "@/lib/api";
+import { getToken, removeToken } from "@/lib/auth";
+import { useRouter } from "next/navigation";
+import Logo from "@/components/Logo";
+
+export default function Dashboard() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = getToken();
+
+    if (!token) {
+      router.push("/login");
+    }
+  }, [router]);
+
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    setToken(getToken());
+  }, []);
+
+  const [balance, setBalance] = useState(0);
+  const [initialUnits, setInitialUnits] = useState("");
+  // Handler for initializing units
+  const handleInitializeUnits = async () => {
+    if (!token) return;
+
+    const units = Number(initialUnits);
+
+    if (!units || units <= 0) {
+      setToast({ message: "Enter valid units", type: "error" });
+      return;
+    }
+
+    try {
+      await initializeUnits(token, units);
+
+      setToast({ message: "Units initialized successfully", type: "success" });
+
+      // Refresh EVERYTHING
+      const balanceData = await getBalance(token);
+      setBalance(balanceData.data.remaining);
+
+      const predictionData = await getPrediction(token);
+      setPrediction(predictionData.data);
+
+      const alertData = await getAlert(token);
+      setAlert(alertData.data.alert);
+
+      const historyData = await getUsageHistory(token);
+      setHistory(historyData.data);
+
+      setInitialUnits("");
+    } catch (error: any) {
+      setToast({ message: error?.message || "Failed to initialize units", type: "error" });
+    }
+  };
+
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      if (!token) return;
+
+      try {
+        const balanceData = await getBalance(token);
+        setBalance(balanceData.data.remaining);
+
+        const predictionData = await getPrediction(token);
+        setPrediction(predictionData.data);
+
+        const alertData = await getAlert(token);
+        setAlert(alertData.data.alert);
+
+        const historyData = await getUsageHistory(token);
+        setHistory(historyData.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchAllData();
+  }, [token]);
+
+  // Prediction function
+  const [prediction, setPrediction] = useState({
+    avgPerDay: 0,
+    estimatedDaysLeft: 0,
+  });
+
+  // Alert function
+  const [alert, setAlert] = useState("");
+
+  // HandleUsageSubmit Function
+  const handleUsageSubmit = async (units: number) => {
+    if (!token) return;
+    try {
+      await logUsage(token, units);
+      setToast({ message: "Usage logged successfully", type: "success" });
+
+      // Refresh data after logging
+      const balanceData = await getBalance(token);
+      setBalance(balanceData.data.remaining);
+
+      const predictionData = await getPrediction(token);
+      setPrediction(predictionData.data);
+
+      const alertData = await getAlert(token);
+      setAlert(alertData.data.alert);
+
+      const historyData = await getUsageHistory(token);
+      setHistory(historyData.data);
+    } catch (error: any) {
+      setToast({
+        message: error?.message || "Something went wrong",
+        type: "error",
+      });
+    }
+  };
+
+  // UsageHistory function
+  const [history, setHistory] = useState<{ date: string; unitsUsed: number }[]>([]);
+
+  return (
+    <div className="min-h-screen bg-dark text-white p-4 md:p-6">
+      {toast && (
+        <div className={`fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 ${
+          toast.type === "success" ? "bg-success text-white" : "bg-danger text-white"
+        }`}>
+          {toast.message}
+        </div>
+      )}
+      <div className="flex justify-between items-center mb-4 md:mb-6 gap-2">
+        <Logo />
+        <button
+          onClick={() => {
+            removeToken();
+            router.push("/login");
+          }}
+          className="text-xs sm:text-sm text-danger border border-danger px-2 sm:px-3 py-1 rounded hover:bg-danger/10 whitespace-nowrap"
+        >
+          Logout
+        </button>
+      </div>
+      
+      <AlertBanner message={alert} />
+
+      <div className="bg-card p-6 rounded-2xl border border-gray-700 mb-6">
+        <h2 className="text-gray-400 text-sm mb-3">
+          {balance === 0 ? "Set Initial Units (kWh)" : "Add Units (kWh)"}
+        </h2>
+
+        <input
+          type="number"
+          placeholder={
+            balance === 0
+              ? "Enter your current electricity units (e.g. 120)"
+              : "Add more units (e.g. 50)"
+          }
+          value={initialUnits}
+          onChange={(e) => setInitialUnits(e.target.value)}
+          className="w-full p-2 rounded bg-dark border border-gray-600 text-white mb-3"
+        />
+
+        <button
+          onClick={handleInitializeUnits}
+          disabled={!initialUnits}
+          className="w-full bg-primary text-black font-bold py-2 rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {balance === 0 ? "Set Units" : "Add Units"}
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div>
+          <BalanceCard remaining={balance} />
+          <p className="text-xs text-gray-400 mt-2">
+            Remaining electricity (kWh) — matches your meter reading
+          </p>
+        </div>
+
+        <PredictionCard 
+          avgPerDay={prediction.avgPerDay}
+          daysLeft={prediction.estimatedDaysLeft}
+        />
+
+        <UsageInput onSubmit={handleUsageSubmit} />
+
+        <UsageChart data={history} />
+      </div>
+    </div>
+  );
+}
