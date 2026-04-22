@@ -136,7 +136,7 @@ export default function Navbar() {
               </button>
 
               {menuOpen && (
-                <div className={`absolute right-0 mt-2 w-40 bg-[#0f172a] border border-gray-700 rounded-lg shadow-lg py-2 z-50 transform transition-all duration-200 ease-out ${menuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}>
+                <div className={`absolute right-0 mt-2 w-40 bg-[#0f172a] text-white border border-gray-700 rounded-lg shadow-lg py-2 z-50 transform transition-all duration-200 ease-out ${menuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}>
                   <div className="px-4 py-2 text-sm text-gray-300 border-b border-gray-700">
                     {user?.name || "User"}
                   </div>
@@ -144,7 +144,7 @@ export default function Navbar() {
                   {pathname !== "/dashboard" && (
                     <Link
                       href="/dashboard"
-                      className="block px-4 py-2 text-sm hover:bg-gray-800 transition"
+                      className="block px-4 py-2 text-sm text-gray-200 hover:text-white hover:bg-gray-800 transition"
                     >
                       Dashboard
                     </Link>
