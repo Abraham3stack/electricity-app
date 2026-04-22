@@ -17,23 +17,21 @@ import Logo from "@/components/Logo";
 
 export default function Dashboard() {
   const router = useRouter();
-
-  useEffect(() => {
-    const token = getToken();
-
-    if (!token) {
-      router.push("/login");
-    }
-  }, [router]);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const [token, setToken] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
     const storedToken = getToken();
+
+    if (!storedToken) {
+      router.replace("/login");
+      return;
+    }
+
     setToken(storedToken);
 
-    // Try to get username from localStorage (adjust key if needed)
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
@@ -45,7 +43,9 @@ export default function Dashboard() {
     } else {
       setUserName("User");
     }
-  }, []);
+
+    setIsCheckingAuth(false);
+  }, [router]);
 
   const [balance, setBalance] = useState(0);
   const [initialUnits, setInitialUnits] = useState("");
@@ -167,7 +167,7 @@ export default function Dashboard() {
   // UsageHistory function
   const [history, setHistory] = useState<{ date: string; unitsUsed: number }[]>([]);
 
-  if (!token) return null;
+  if (isCheckingAuth) return null;
 
   return (
     <div className="min-h-screen bg-dark text-white p-4 md:p-6">

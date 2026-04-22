@@ -120,6 +120,21 @@ const handleResponse = async (res: Response) => {
   }
 
   if (!res.ok) {
+    // 🔐 Handle unauthorized globally
+    if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        // Show session expired message
+        alert("Session expired, please login again");
+
+        // Redirect to homepage
+        window.location.href = "/";
+      }
+      return;
+    }
+
     throw new Error(data?.message || "Something went wrong");
   }
 

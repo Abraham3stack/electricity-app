@@ -49,7 +49,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark text-white p-6">
+    <div className={`min-h-screen flex items-center justify-center bg-dark text-white p-6 ${loading ? "cursor-not-allowed" : ""}`}>
       {toast && (
         <div className={`fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 ${
           toast.type === "success" ? "bg-success text-white" : "bg-danger text-white"
@@ -69,6 +69,7 @@ export default function Login() {
           className="w-full p-2 mb-3 bg-dark border border-gray-600 rounded" 
           onChange={(e) => setEmail(e.target.value)}
           onInput={(e) => setEmail((e.target as HTMLInputElement).value)}
+          disabled={loading}
         />
 
         <input 
@@ -78,11 +79,16 @@ export default function Login() {
           className="w-full p-2 mb-3 bg-dark border border-gray-600 rounded" 
           onChange={(e) => setPassword(e.target.value)}
           onInput={(e) => setPassword((e.target as HTMLInputElement).value)}
+          disabled={loading}
         />
 
         <button
           onClick={handleLogin}
-          className="w-full bg-primary text-black py-2 rounded font-bold"
+          className={`w-full py-2 rounded font-bold transition ${
+            loading
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-primary text-black hover:opacity-90 cursor-pointer"
+          }`}
           disabled={loading}
         >
           {loading ? "Logging in..." : "Login"}

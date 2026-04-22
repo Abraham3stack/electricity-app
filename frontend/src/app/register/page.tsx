@@ -40,6 +40,11 @@ export default function Register() {
       // Step 3: save token
       saveToken(res.token);
 
+      // Save user for greeting
+      if (res.user) {
+        localStorage.setItem("user", JSON.stringify(res.user));
+      }
+
       setToast({ message: "Account created successfully!", type: "success" });
 
       // Step 4: redirect to dashboard
@@ -54,7 +59,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark text-white p-6">
+    <div className={`min-h-screen flex items-center justify-center bg-dark text-white p-6 ${loading ? "cursor-not-allowed" : ""}`}>
       {toast && (
         <div className={`fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 ${
           toast.type === "success" ? "bg-success text-white" : "bg-danger text-white"
@@ -73,6 +78,7 @@ export default function Register() {
           placeholder="Name"
           className="w-full p-2 mb-3 bg-dark border border-gray-600 rounded"
           onChange={(e) => setName(e.target.value)}
+          disabled={loading}
         />
 
         <input 
@@ -81,6 +87,7 @@ export default function Register() {
           placeholder="Email"
           className="w-full p-2 mb-3 bg-dark border border-gray-600 rounded" 
           onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
         />
 
         <input 
@@ -89,11 +96,16 @@ export default function Register() {
           placeholder="Password"
           className="w-full p-2 mb-3 bg-dark border border-gray-600 rounded" 
           onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
         />
 
         <button
           onClick={handleRegister}
-          className="w-full bg-primary text-black py-2 rounded font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`w-full py-2 rounded font-bold transition ${
+            loading
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-primary text-black hover:opacity-90 cursor-pointer"
+          }`}
           disabled={loading}
         >
           {loading ? "Registering..." : "Register"}
