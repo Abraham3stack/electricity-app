@@ -6,22 +6,6 @@ export default function Home() {
   
   return (
     <main className="min-h-screen bg-[#0f172a] text-white">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 flex justify-between items-center px-6 py-4 border-b border-gray-800 bg-[#0f172a]/80 backdrop-blur">
-        <Link href="/" className="flex items-center gap-2 text-yellow-400 font-bold text-lg hover:opacity-80 transition">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="#facc15">
-            <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
-          </svg>
-          PowerTrack
-        </Link>
-
-        <Link
-          href="/login"
-          className="px-4 py-2 border border-yellow-400 rounded-lg hover:bg-yellow-400 hover:text-black transition"
-        >
-          Login
-        </Link>
-      </nav>
       {/* Hero */}
       <section className="flex flex-col items-center justify-center text-center px-6 py-24">
         <div className="relative flex items-center gap-3 mb-4">
