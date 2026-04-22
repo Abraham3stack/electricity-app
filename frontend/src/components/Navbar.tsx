@@ -57,20 +57,20 @@ export default function Navbar() {
   }, [pathname]);
 
   return (
-    <nav className="sticky top-0 z-50 flex justify-between items-center px-6 py-4 border-b border-gray-800 bg-[#0f172a]/80 backdrop-blur">
+    <nav className="sticky top-0 z-50 flex justify-between items-center px-4 sm:px-6 py-4 border-b border-gray-800 bg-[#0f172a]/80 backdrop-blur">
       {/* Left: Logo */}
       <Logo />
 
       {/* Right: Navigation */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         {!isLoggedIn ? (
           <>
             <Link
               href="/login"
-              className={`px-4 py-2 border rounded-lg transition ${
+              className={`hidden sm:block text-sm transition ${
                 pathname === "/login"
-                  ? "bg-yellow-400 text-black border-yellow-400"
-                  : "border-yellow-400 hover:bg-yellow-400 hover:text-black"
+                  ? "text-white"
+                  : "text-gray-300 hover:text-white"
               }`}
             >
               Login
@@ -78,7 +78,7 @@ export default function Navbar() {
 
             <Link
               href="/register"
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
+              className={`px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg font-semibold transition ${
                 pathname === "/register"
                   ? "bg-yellow-300 text-black"
                   : "bg-yellow-400 text-black hover:bg-yellow-300"

@@ -20,7 +20,7 @@ export default function Home() {
         </div>
 
         <p className="text-lg text-gray-300 max-w-2xl mb-6">
-          Know exactly how fast your electricity is running out. Track usage, monitor trends, and predict how long your units will last — all in one place.
+          Know exactly how fast your electricity is running out. Track usage, monitor trends, and predict how long your units will last, all in one place.
         </p>
 
         <div className="flex gap-4">
@@ -28,7 +28,7 @@ export default function Home() {
             href="/login"
             className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold transition transform hover:scale-105 hover:bg-yellow-300"
           >
-            Get Started
+            Login
           </Link>
 
           <Link
