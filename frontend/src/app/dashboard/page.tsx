@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import BalanceCard from "@/components/BalanceCard";
 import { getBalance, initializeUnits } from "@/lib/api";
 import PredictionCard from "@/components/PredictionCard";
@@ -21,6 +21,10 @@ export default function Dashboard() {
 
   const [token, setToken] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
+  const [costPerUnit, setCostPerUnit] = useState<number>(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -43,6 +47,9 @@ export default function Dashboard() {
     } else {
       setUserName("User");
     }
+
+    const savedCost = localStorage.getItem("costPerUnit");
+    if (savedCost) setCostPerUnit(Number(savedCost));
 
     setIsCheckingAuth(false);
   }, [router]);
@@ -75,6 +82,7 @@ export default function Dashboard() {
       ]);
 
       setBalance(balanceData.data.remaining);
+      localStorage.setItem("balance", String(balanceData.data.remaining));
       setPrediction(predictionData.data);
       setAlert(alertData.data.alert);
       setHistory(historyData.data);
@@ -98,6 +106,20 @@ export default function Dashboard() {
   }, [toast]);
 
   useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchAllData = async () => {
       if (!token) return;
 
@@ -110,6 +132,7 @@ export default function Dashboard() {
         ]);
 
         setBalance(balanceData.data.remaining);
+        localStorage.setItem("balance", String(balanceData.data.remaining));
         setPrediction(predictionData.data);
         setAlert(alertData.data.alert);
         setHistory(historyData.data);
@@ -144,6 +167,7 @@ export default function Dashboard() {
       ]);
 
       setBalance(balanceData.data.remaining);
+      localStorage.setItem("balance", String(balanceData.data.remaining));
 
       // Fix: ensure avg shows on first entry
       const pred = predictionData.data;
@@ -167,6 +191,11 @@ export default function Dashboard() {
   // UsageHistory function
   const [history, setHistory] = useState<{ date: string; unitsUsed: number }[]>([]);
 
+  const totalUnitsUsed = history.reduce((acc, item) => acc + item.unitsUsed, 0);
+  const estimatedCost = totalUnitsUsed * costPerUnit;
+
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+
   if (isCheckingAuth) return null;
 
   return (
@@ -178,24 +207,98 @@ export default function Dashboard() {
           {toast.message}
         </div>
       )}
-      <div className="sticky top-0 z-50 flex justify-between items-center mb-4 md:mb-6 gap-2 px-2 py-3 bg-dark/80 backdrop-blur border-b border-gray-800">
+      <div className="sticky top-0 z-50 flex justify-between items-center mb-4 md:mb-6 gap-2 px-4 sm:px-6 py-4 bg-[#0f172a]/80 backdrop-blur border-b border-gray-800">
         <div className="flex items-center gap-3">
           <Logo />
         </div>
 
-        <div className="flex flex-col items-end gap-1">
-          <span className="text-sm sm:text-base text-gray-300">
-            Hi {userName} 👋
-          </span>
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-4">
+          {pathname !== "/planner" && (
+            <button
+              onClick={() => router.push("/planner")}
+              className="px-4 py-2 border rounded-lg border-gray-600 text-gray-300 hover:border-yellow-400 hover:text-white transition"
+            >
+              ⚡ Plan Usage
+            </button>
+          )}
+
+          {pathname === "/planner" && (
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="px-4 py-2 border rounded-lg border-yellow-400 hover:bg-yellow-400 hover:text-black transition"
+            >
+              📊 Dashboard
+            </button>
+          )}
+
           <button
             onClick={() => {
               removeToken();
               router.push("/login");
             }}
-            className="text-xs sm:text-sm text-danger border border-danger px-2 sm:px-3 py-1 rounded hover:bg-danger/10 whitespace-nowrap"
+            className="text-sm border border-red-500 text-red-400 px-3 py-1 rounded hover:bg-red-500/10 transition"
           >
             Logout
           </button>
+        </div>
+
+        {/* Mobile Avatar Dropdown */}
+        <div ref={menuRef} className="relative md:hidden">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center gap-1 w-auto bg-yellow-400 text-black font-bold px-2 h-8 rounded-full cursor-pointer hover:scale-105 hover:opacity-90 active:scale-95 transition"
+          >
+            <span className="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-200 text-black text-sm">
+              {userName?.charAt(0).toUpperCase()}
+            </span>
+            <span className={`text-xs transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`}>
+              ▾
+            </span>
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-44 bg-[#0f172a] border border-gray-700 rounded-lg shadow-lg py-2 z-50">
+              <div className="px-4 py-2 text-sm text-gray-400">
+                Hi {userName} 👋
+              </div>
+
+              {pathname !== "/planner" && (
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/planner");
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-800 transition"
+                >
+                  ⚡ Plan Usage
+                </button>
+              )}
+
+              {pathname === "/planner" && (
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    router.push("/dashboard");
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-gray-800 transition"
+                >
+                  📊 Dashboard
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  removeToken();
+                  router.push("/login");
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 transition"
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
       
@@ -225,6 +328,30 @@ export default function Dashboard() {
         >
           {initLoading ? "Processing..." : balance === 0 ? "Set Units" : "Add Units"}
         </button>
+      </div>
+
+      <div className="bg-card p-6 rounded-2xl border border-gray-700 mb-6">
+        <h2 className="text-gray-400 text-sm mb-3">Electricity Cost (₦ per unit)</h2>
+
+        <input
+          type="number"
+          placeholder="Enter cost per unit (e.g. 50)"
+          value={costPerUnit || ""}
+          onChange={(e) => {
+            const value = Number(e.target.value);
+            setCostPerUnit(value);
+            localStorage.setItem("costPerUnit", String(value));
+          }}
+          className="w-full p-2 rounded bg-dark border border-gray-600 text-white mb-3"
+        />
+
+        <div className="text-sm text-gray-400">
+          Total Units Used: <span className="text-white font-semibold">{totalUnitsUsed}</span>
+        </div>
+
+        <div className="text-lg font-bold text-primary mt-2">
+          Estimated Cost: ₦{estimatedCost.toLocaleString()}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">

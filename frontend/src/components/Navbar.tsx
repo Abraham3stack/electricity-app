@@ -100,6 +100,15 @@ export default function Navbar() {
                 </Link>
               )}
 
+              {pathname !== "/planner" && (
+                <Link
+                  href="/planner"
+                  className="px-4 py-2 border rounded-lg border-gray-600 text-gray-300 hover:border-yellow-400 hover:text-white transition"
+                >
+                  Plan Usage
+                </Link>
+              )}
+
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-yellow-400 text-black flex items-center justify-center font-bold text-sm cursor-pointer hover:scale-105 active:scale-95 transition">
                   {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
@@ -127,7 +136,7 @@ export default function Navbar() {
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="flex items-center gap-1 w-auto px-2 h-8 rounded-full bg-yellow-400 text-black justify-center font-bold text-sm cursor-pointer hover:scale-105 active:scale-95 transition"
               >
-                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-400 text-black font-bold text-sm">
+                <span className="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-200 text-black font-bold text-sm">
                   {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
                 </span>
                 <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
@@ -147,6 +156,15 @@ export default function Navbar() {
                       className="block px-4 py-2 text-sm text-gray-200 hover:text-white hover:bg-gray-800 transition"
                     >
                       Dashboard
+                    </Link>
+                  )}
+
+                  {pathname !== "/planner" && (
+                    <Link
+                      href="/planner"
+                      className="block px-4 py-2 text-sm text-gray-200 hover:text-white hover:bg-gray-800 transition"
+                    >
+                      ⚡ Plan Usage
                     </Link>
                   )}
 
