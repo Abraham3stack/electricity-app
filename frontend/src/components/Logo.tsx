@@ -1,6 +1,11 @@
+import Link from "next/link";
+
 export default function Logo() {
   return (
-    <div className="flex items-center gap-2 transition-transform duration-300 hover:scale-[1.02]">
+    <Link
+      href="/"
+      className="flex items-center gap-2 transition-transform duration-300 hover:scale-[1.02]"
+    >
       <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 hover:shadow-[0_0_12px_rgba(250,204,21,0.8)]">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -19,6 +24,6 @@ export default function Logo() {
           Smart Electricity Insights
         </span>
       </div>
-    </div>
+    </Link>
   );
 }

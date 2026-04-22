@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 5001;
 
 async function testDB() {
   const users = await prisma.user.findMany();
-  console.log(users);
+  // console.log(users);
 }
 if (process.env.NODE_ENV !== "production") {
   testDB();

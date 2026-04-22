@@ -27,9 +27,24 @@ export default function Dashboard() {
   }, [router]);
 
   const [token, setToken] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
-    setToken(getToken());
+    const storedToken = getToken();
+    setToken(storedToken);
+
+    // Try to get username from localStorage (adjust key if needed)
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setUserName(parsed.name || "User");
+      } catch {
+        setUserName("User");
+      }
+    } else {
+      setUserName("User");
+    }
   }, []);
 
   const [balance, setBalance] = useState(0);
@@ -152,6 +167,8 @@ export default function Dashboard() {
   // UsageHistory function
   const [history, setHistory] = useState<{ date: string; unitsUsed: number }[]>([]);
 
+  if (!token) return null;
+
   return (
     <div className="min-h-screen bg-dark text-white p-4 md:p-6">
       {toast && (
@@ -161,17 +178,25 @@ export default function Dashboard() {
           {toast.message}
         </div>
       )}
-      <div className="flex justify-between items-center mb-4 md:mb-6 gap-2">
-        <Logo />
-        <button
-          onClick={() => {
-            removeToken();
-            router.push("/login");
-          }}
-          className="text-xs sm:text-sm text-danger border border-danger px-2 sm:px-3 py-1 rounded hover:bg-danger/10 whitespace-nowrap"
-        >
-          Logout
-        </button>
+      <div className="sticky top-0 z-50 flex justify-between items-center mb-4 md:mb-6 gap-2 px-2 py-3 bg-dark/80 backdrop-blur border-b border-gray-800">
+        <div className="flex items-center gap-3">
+          <Logo />
+        </div>
+
+        <div className="flex flex-col items-end gap-1">
+          <span className="text-sm sm:text-base text-gray-300">
+            Hi {userName} 👋
+          </span>
+          <button
+            onClick={() => {
+              removeToken();
+              router.push("/login");
+            }}
+            className="text-xs sm:text-sm text-danger border border-danger px-2 sm:px-3 py-1 rounded hover:bg-danger/10 whitespace-nowrap"
+          >
+            Logout
+          </button>
+        </div>
       </div>
       
       <AlertBanner message={alert} />

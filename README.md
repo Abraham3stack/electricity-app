@@ -7,7 +7,7 @@ PowerTrack is a full-stack web application that helps users track electricity us
 ## 🚀 Live Demo
 
 Frontend: https://electricity-app-ten.vercel.app  
-Backend: https://electricity-app-production.up.railway.app
+Backend: https://electricity-app-yd3w.onrender.com
 
 ---
 

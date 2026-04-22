@@ -92,6 +92,6 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     token,
-    data: userWithoutPassword,
+    user: userWithoutPassword,
   });
 });

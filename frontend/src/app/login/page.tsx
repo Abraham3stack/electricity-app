@@ -30,7 +30,15 @@ export default function Login() {
     try {
       setLoading(true);
       const res = await loginUser(email, password);
+
+      // Save token
       saveToken(res.token);
+
+      // 🔥 Save user info for greeting
+      if (res.user) {
+        localStorage.setItem("user", JSON.stringify(res.user));
+      }
+
       setToast({ message: "Login successful!", type: "success" });
       router.push("/dashboard");
     } catch (error: any) {
